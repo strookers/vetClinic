@@ -1,50 +1,50 @@
 package DBLayer;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
-import ModelLayer.*;
+import ModelLayer.Doctor;
 
-public class DBAnimal implements IFDBAnimal{
-	private Connection con;
-	private DBOwner dbOwner = new DBOwner();
-	
+public class DBDoctor  implements IFDBDoctor{
+	private  Connection con;
+
 	public static void main(String[] args) {
 
-		new DBAnimal();
+		new DBDoctor();
 	    }
-
-	public DBAnimal() {
+	
+	public DBDoctor() {
 		con = DbConnection.getInstance().getDBcon();
 		/*
-		ArrayList<Animal> liste = getAllAnimals(false);
+		ArrayList<Doctor> liste = getAllDoctors(false);
 		
 		for(int i = 0; i < liste.size(); i++)
 		{
-			System.out.println(liste.get(i).getName());
-			System.out.println(liste.get(i).getOwner().getFname());
-			System.out.println("");
+			System.out.println(liste.get(i).getCity());
 		}
 		*/
 		/*
-		Animal animal = findAnimal(1, false);
-		System.out.println(animal.getName() +" "+ animal.getSpecies());
+		Doctor doctor = findDoctor(1, false);
+		System.out.println(doctor.getFname());
 		*/
 	}
 	
-	public ArrayList<Animal> getAllAnimals(boolean retriveAssociation)
+	public ArrayList<Doctor> getAllDoctors(boolean retriveAssociation)
     {
         return miscWhere("", retriveAssociation);
     }
 	
-	public Animal findAnimal(int id, boolean retriveAssociation)
+	public Doctor findDoctor(int id, boolean retriveAssociation)
     {   String wClause = "  id = '" + id + "'";
         return singleWhere(wClause, retriveAssociation);
     }
 	
-	private ArrayList<Animal> miscWhere(String wClause, boolean retrieveAssociation)
+	private ArrayList<Doctor> miscWhere(String wClause, boolean retrieveAssociation)
 	{
             ResultSet results;
-	    ArrayList<Animal> list = new ArrayList<Animal>();	
+	    ArrayList<Doctor> list = new ArrayList<Doctor>();	
 		
 	    String query =  buildQuery(wClause);
   
@@ -55,9 +55,9 @@ public class DBAnimal implements IFDBAnimal{
 	 	
 	
 		while( results.next() ){
-	     	 Animal animalObj = new Animal();
-		 animalObj = buildAnimal(results);	
-                 list.add(animalObj);	
+	     	 Doctor doctorObj = new Doctor();
+		 doctorObj = buildDoctor(results);	
+                 list.add(doctorObj);	
 		}//end while
                  stmt.close();     
                  if(retrieveAssociation)
@@ -72,10 +72,10 @@ public class DBAnimal implements IFDBAnimal{
 		return list;
 	}
 	
-	private Animal singleWhere(String wClause, boolean retrieveAssociation)
+	private Doctor singleWhere(String wClause, boolean retrieveAssociation)
 	{
 		ResultSet results;
-		Animal animalObj = new Animal();
+		Doctor doctorObj = new Doctor();
                 
 	        String query =  buildQuery(wClause);
                 //System.out.println(query);
@@ -85,27 +85,27 @@ public class DBAnimal implements IFDBAnimal{
 	 		results = stmt.executeQuery(query);
 	 		
 	 		if( results.next() ){
-	 			animalObj = buildAnimal(results);
-                            //association is to be build
+	 			doctorObj = buildDoctor(results);
+                            //assocaition is to be build
                             stmt.close();
                             if(retrieveAssociation)
                             {
                             }
 			}
                         else{ //no employee was found
-                        	animalObj = null;
+                        	doctorObj = null;
                         }
 		}//end try	
 	 	catch(Exception e){
 	 		System.out.println("Query exception: "+e);
 	 	}
-		return animalObj;
+		return doctorObj;
 	}
 	
 	//method to build the query
 		private String buildQuery(String wClause)
 		{
-		    String query="SELECT ownerid, name, (select species from species where id = animals.speciesid) as species, (select race from races where id = animals.raceid) as race FROM animals";
+		    String query="SELECT fname, lname, address, zipcode, (select city from cities where id = doctor.zipcode) as city, email, phone  FROM doctor";
 			
 			if (wClause.length()>0)
 				query=query+" WHERE "+ wClause;
@@ -114,19 +114,21 @@ public class DBAnimal implements IFDBAnimal{
 		}
 		
 		//method to build an owner object
-		private Animal buildAnimal(ResultSet results)
-	      {   Animal animalObj = new Animal();
-	          try{ // the columns from the table animal are used
-	        	  animalObj.setOwner(dbOwner.findOwner(results.getInt("ownerid"), false));
-	        	  animalObj.setName(results.getString("name"));
-	        	  animalObj.setSpecies(results.getString("species"));
-	        	  animalObj.setRace(results.getString("race"));
+		private Doctor buildDoctor(ResultSet results)
+	      {   Doctor doctorObj = new Doctor();
+	          try{ // the columns from the table emplayee  are used
+	        	  doctorObj.setFname(results.getString("fname"));
+	        	  doctorObj.setLname(results.getString("lname"));
+	        	  doctorObj.setAddress(results.getString("address"));
+	        	  doctorObj.setZipcode(results.getInt("zipcode"));
+	        	  doctorObj.setCity(results.getString("city"));
+	        	  doctorObj.setEmail(results.getString("email"));
+	        	  doctorObj.setPhone(results.getInt("phone"));
 	          }
 	         catch(Exception e)
 	         {
-	             System.out.println("error in building the animal object");
+	             System.out.println("error in building the owner object");
 	         }
-	         return animalObj;
+	         return doctorObj;
 	      }
-
 }

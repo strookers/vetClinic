@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import ModelLayer.*;
 
-public interface IFDBAnimal {
-	// get all animals
-    public ArrayList<Animal> getAllAnimals(boolean retriveAssociation);
-    //get one animal having the ssn
-    public Animal findAnimal(int id, boolean retriveAssociation);
-    //find one animal having the name
-    //public Owner searchAnimalFname( String fname, boolean retriveAssociation);
+public interface IFDBJournal {
+	// get all employees
+    public ArrayList<Journal> getAllJournals(boolean retriveAssociation);
+    //get one doctor having the id
+    //public Doctor findDoctor(int id, boolean retriveAssociation);
+    //find one employee having the name
+    //public Owner searchOwnerFname( String fname, boolean retriveAssociation);
     //public Owner searchOwnerLname( String Lname, boolean retriveAssociation);
     
     //insert a new employee

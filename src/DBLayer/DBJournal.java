@@ -1,50 +1,55 @@
 package DBLayer;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
-import ModelLayer.*;
+import ModelLayer.Journal;
 
-public class DBAnimal implements IFDBAnimal{
-	private Connection con;
-	private DBOwner dbOwner = new DBOwner();
-	
+public class DBJournal  implements IFDBJournal{
+	private  Connection con;
+	private DBDoctor dbDoctor = new DBDoctor();
+	private DBAnimal dbAnimal = new DBAnimal();
+
 	public static void main(String[] args) {
 
-		new DBAnimal();
+		new DBJournal();
 	    }
-
-	public DBAnimal() {
+	
+	public DBJournal() {
 		con = DbConnection.getInstance().getDBcon();
 		/*
-		ArrayList<Animal> liste = getAllAnimals(false);
+		ArrayList<Journal> liste = getAllJournals(false);
 		
 		for(int i = 0; i < liste.size(); i++)
 		{
-			System.out.println(liste.get(i).getName());
-			System.out.println(liste.get(i).getOwner().getFname());
-			System.out.println("");
+			System.out.println("Dyr: " + liste.get(i).getAnimal().getName());
+			System.out.println("Årsag: " + liste.get(i).getTitle());
+			System.out.println("Læge:" + liste.get(i).getDoctor().getFname());
+			System.out.println(" ");
 		}
 		*/
 		/*
-		Animal animal = findAnimal(1, false);
-		System.out.println(animal.getName() +" "+ animal.getSpecies());
+		Journal journal = findJournal(2, false);
+		System.out.println(journal.getTitle());
 		*/
 	}
 	
-	public ArrayList<Animal> getAllAnimals(boolean retriveAssociation)
+	public ArrayList<Journal> getAllJournals(boolean retriveAssociation)
     {
         return miscWhere("", retriveAssociation);
     }
 	
-	public Animal findAnimal(int id, boolean retriveAssociation)
+	public Journal findJournal(int id, boolean retriveAssociation)
     {   String wClause = "  id = '" + id + "'";
         return singleWhere(wClause, retriveAssociation);
     }
 	
-	private ArrayList<Animal> miscWhere(String wClause, boolean retrieveAssociation)
+	private ArrayList<Journal> miscWhere(String wClause, boolean retrieveAssociation)
 	{
             ResultSet results;
-	    ArrayList<Animal> list = new ArrayList<Animal>();	
+	    ArrayList<Journal> list = new ArrayList<Journal>();	
 		
 	    String query =  buildQuery(wClause);
   
@@ -55,9 +60,9 @@ public class DBAnimal implements IFDBAnimal{
 	 	
 	
 		while( results.next() ){
-	     	 Animal animalObj = new Animal();
-		 animalObj = buildAnimal(results);	
-                 list.add(animalObj);	
+			Journal journalObj = new Journal();
+			journalObj = buildJournal(results);	
+                 list.add(journalObj);	
 		}//end while
                  stmt.close();     
                  if(retrieveAssociation)
@@ -72,10 +77,10 @@ public class DBAnimal implements IFDBAnimal{
 		return list;
 	}
 	
-	private Animal singleWhere(String wClause, boolean retrieveAssociation)
+	private Journal singleWhere(String wClause, boolean retrieveAssociation)
 	{
 		ResultSet results;
-		Animal animalObj = new Animal();
+		Journal journalObj = new Journal();
                 
 	        String query =  buildQuery(wClause);
                 //System.out.println(query);
@@ -85,7 +90,7 @@ public class DBAnimal implements IFDBAnimal{
 	 		results = stmt.executeQuery(query);
 	 		
 	 		if( results.next() ){
-	 			animalObj = buildAnimal(results);
+	 			journalObj = buildJournal(results);
                             //association is to be build
                             stmt.close();
                             if(retrieveAssociation)
@@ -93,19 +98,19 @@ public class DBAnimal implements IFDBAnimal{
                             }
 			}
                         else{ //no employee was found
-                        	animalObj = null;
+                        	journalObj = null;
                         }
 		}//end try	
 	 	catch(Exception e){
 	 		System.out.println("Query exception: "+e);
 	 	}
-		return animalObj;
+		return journalObj;
 	}
 	
 	//method to build the query
 		private String buildQuery(String wClause)
 		{
-		    String query="SELECT ownerid, name, (select species from species where id = animals.speciesid) as species, (select race from races where id = animals.raceid) as race FROM animals";
+		    String query="SELECT animalid, title, date, text, doctorid FROM journals";
 			
 			if (wClause.length()>0)
 				query=query+" WHERE "+ wClause;
@@ -114,19 +119,18 @@ public class DBAnimal implements IFDBAnimal{
 		}
 		
 		//method to build an owner object
-		private Animal buildAnimal(ResultSet results)
-	      {   Animal animalObj = new Animal();
-	          try{ // the columns from the table animal are used
-	        	  animalObj.setOwner(dbOwner.findOwner(results.getInt("ownerid"), false));
-	        	  animalObj.setName(results.getString("name"));
-	        	  animalObj.setSpecies(results.getString("species"));
-	        	  animalObj.setRace(results.getString("race"));
+		private Journal buildJournal(ResultSet results)
+	      {   Journal journalObj = new Journal();
+	          try{ // the columns from the table emplayee  are used
+	        	  journalObj.setAnimal(dbAnimal.findAnimal(results.getInt("animalid"), false));
+	        	  journalObj.setTitle(results.getString("title"));
+	        	  journalObj.setText(results.getString("text"));
+	        	  journalObj.setDoctor(dbDoctor.findDoctor(results.getInt("doctorid"), false));
 	          }
 	         catch(Exception e)
 	         {
-	             System.out.println("error in building the animal object");
+	             System.out.println("error in building the owner object");
 	         }
-	         return animalObj;
+	         return journalObj;
 	      }
-
 }
